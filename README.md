@@ -23,7 +23,7 @@ Create a captive portal
 Let to connect to WIFI
 Let to change settings with a web interface
 
-<img src="[drawing.jpg](https://github.com/guido57/ESP32-Sun-Tracker/blob/master/docs/AutoConnect-settings.jpg)" alt="drawing" width="200"/>
+<img src="https://github.com/guido57/ESP32-Sun-Tracker/blob/master/docs/AutoConnect-settings.jpg" alt="drawing" width="400"/>
 
 
 
