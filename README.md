@@ -19,13 +19,14 @@ In the loop():
 
 ### AutoConnect
 
-Create a captive portal
-Let to connect to WIFI
-Let to change settings with a web interface
+See also [AutoConnect by Hieromon](https://hieromon.github.io/AutoConnect/index.html)
+
+* Automatically start a WIFI hostpot (ESP32 softAP) with a captive portal at first run of if there's no connection to a WIFi hotspot
+* Let to connect to a WIFI hotspot
+* Reconnect in case of reboot or connection lost
+* Let to change settings with a web interface
 
 <img src="https://github.com/guido57/ESP32-Sun-Tracker/blob/master/docs/AutoConnect-settings.jpg" alt="drawing" width="400"/>
-
-
 
 
 
