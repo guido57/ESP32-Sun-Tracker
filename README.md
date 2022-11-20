@@ -15,7 +15,10 @@ The hardware schematic is the following:
 In the loop():
 * change LED blinking according to WIFI status
 * read the settings (max_error, sensitivity, update_period, start_time, stop_time) and apply them to the SunTracker object
-* call LED_loop, SunTracker.loop and AutoConnect loop
+* call 
+  * LED_loop
+  * SunTracker.loop
+  * AutoConnect loop
 
 ### AutoConnect
 
