@@ -15,9 +15,9 @@ The hardware schematic is the following:
 In the loop():
 * change LED blinking according to WIFI status
 * read the settings (max_error, sensitivity, update_period, start_time, stop_time) and apply them to the SunTracker object
-* call 
+* call:
   * LED_loop
-  * SunTracker.loop
+  * SunTracker.loop (only if now time is inside start_time and stop_time)
   * AutoConnect loop
 
 ### AutoConnect
@@ -32,9 +32,17 @@ See also
 
 <img src="https://github.com/guido57/ESP32-Sun-Tracker/blob/master/docs/AutoConnect-settings.jpg" alt="drawing" width="400"/>
 
+### SunTracker
 
+In its constructor receives the pins where:
+* PDR1, PDR2, RELE1, RELE2, RUNEND1, RUNEND2 
+are connected 
 
-
+* Read the two photo resistors: PDR1 and PDR2
+* Check if the average of PDR1 and PDR2 values is above the minimum required (sensitivity)
+* Compare their values with max_error
+* Activate the two relays to rotate the DC motor to a new position in which abs(pdr2-pdr1) < avg(PDR1,PDR2) * max_error/100
+* Stop both relays if one of the runend is reached (closed)
 
 
 
