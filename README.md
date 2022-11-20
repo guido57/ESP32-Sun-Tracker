@@ -21,7 +21,9 @@ In the loop():
 
 Create a captive portal
 Let to connect to WIFI
-Let to change settings
+Let to change settings with a web interface
+
+![](blob/master/docs/AutoConnect-settings.jpg)
 
 
 
