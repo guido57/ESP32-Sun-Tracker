@@ -10,7 +10,14 @@ The hardware schematic is the following:
 
 ## Software for ESP32 is in this repository.
 
-main.cpp is very simple. In the loop() it calls:
+### main.cpp
+
+In the loop():
+* read the settings (max_error, sensitivity, update_period, start_time, stop_time) and apply them to the SunTracker object
+* call LED_loop, SunTracker.loop and AutoConnect loop
+
+
+
 
 
 
