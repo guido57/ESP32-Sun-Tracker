@@ -19,7 +19,7 @@ In the loop():
 
 ### AutoConnect
 
-See also [AutoConnect by Hieromon](https://hieromon.github.io/AutoConnect/index.html)
+See also <a href="https://hieromon.github.io/AutoConnect/index.html" target="_blank">AutoConnect by Hieromon</a>
 
 * Automatically start a WIFI hostpot (ESP32 softAP) with a captive portal at first run of if there's no connection to a WIFi hotspot
 * Let to connect to a WIFI hotspot
