@@ -384,7 +384,7 @@ void loop() {
   
   Serial.printf("time_minutes start=%d now=%d stop=%d run_period=%d max_error=%d sensitivity=%d                             \r",start_time_minutes, now_minutes, stop_time_minutes, run_period, max_error, sensitivity);
   
-  if( start_time_minutes != stop_time_minutes && ( now_minutes > start_time_minutes || now_minutes < stop_time_minutes ) ){
+  if( start_time_minutes != stop_time_minutes && ( now_minutes >= start_time_minutes && now_minutes < stop_time_minutes ) ){
     // tracking_loop
 
     st.setMaxError(max_error);  
