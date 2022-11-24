@@ -42,7 +42,7 @@ are connected
 * Check if the average of PDR1 and PDR2 values is above the minimum required (sensitivity)
 * Compare their values with max_error
 * Activate the two relays to rotate the DC motor to a new position in which abs(pdr2-pdr1) < avg(PDR1,PDR2) * max_error/100
-* Stop both relays if one of the runend is reached (closed)
+* Stop both relays if one of the End-Of-Run is reached (closed)
 
 
 
