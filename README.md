@@ -19,6 +19,8 @@ In the loop():
   * LED_loop
   * SunTracker.loop (only if now time is inside start_time and stop_time)
   * AutoConnect loop
+* config the local time (by NTP) using the TimeZone (at any time Internet is newly available)
+* enable / disable the sun tracking according to start_time and stop_time. It works only if the local time was set by NTP at least once after reboot.   
 
 ### AutoConnect
 
