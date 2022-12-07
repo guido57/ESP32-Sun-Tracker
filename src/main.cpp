@@ -9,16 +9,17 @@
 // in InitSPIFS.cpp
 void InitSPIFFS();
 
+
 static const char settings_page[] PROGMEM = R"(
 {
   "title": "Sun Tracker Settings",
-  "uri": "/settings",
+  "uri": "/",
   "menu": true,
   "element": [
     {
       "name": "caption",
       "type": "ACText",
-      "value": "Sets the time zone to set the current local time.<br/>",
+      "value": "Set the time zone to obtain the current local time.<br/>",
       "style": "font-family:Arial;font-weight:bold;text-align:center;margin-bottom:10px;color:DarkSlateBlue"
     },
     {
@@ -29,14 +30,19 @@ static const char settings_page[] PROGMEM = R"(
       "selected": 10
     },
     {
-      "name": "newline",
+      "name": "now_time",
+      "type": "ACText",
+      "value": "Current local time: ... .<br>"
+    },
+    {
+      "name": "newline1",
       "type": "ACElement",
       "value": "<br>"
     },
     {
-      "name": "caption2",
+      "name": "caption3",
       "type": "ACText",
-      "value": "Set the period between two consecutive runs, in milliseconds.<br/>",
+      "value": "Set the period between two consecutive runs, in milliseconds.<br>",
       "style": "font-family:Arial;font-weight:bold;text-align:center;margin-bottom:10px;color:DarkSlateBlue"
     },
     {
@@ -47,21 +53,11 @@ static const char settings_page[] PROGMEM = R"(
       "apply": "number"
     },
     {
-      "name": "newline",
-      "type": "ACElement",
-      "value": "<br>"
-    },
-    {
       "name": "max_error",
       "type": "ACInput",
       "label": "maximum % tracking error 0-100 to be considered a valid tracking",
       "value": "10",
       "apply": "number"
-    },
-    {
-      "name": "newline",
-      "type": "ACElement",
-      "value": "<br>"
     },
     {
       "name": "sensitivity",
@@ -71,7 +67,17 @@ static const char settings_page[] PROGMEM = R"(
       "apply": "number"
     },
     {
-      "name": "newline",
+      "name": "newline4",
+      "type": "ACElement",
+      "value": "<br>"
+    },
+    {
+      "name": "pdr_values",
+      "type": "ACText",
+      "value": "PDR1: ... PDR2: ... .<br>"
+    },
+    {
+      "name": "newline5",
       "type": "ACElement",
       "value": "<br>"
     },
@@ -88,18 +94,13 @@ static const char settings_page[] PROGMEM = R"(
       "value": "7:00"
     },
     {
-      "name": "newline",
-      "type": "ACElement",
-      "value": "<br>"
-    },
-    {
       "name": "stop_time",
       "type": "ACInput",
       "label": "stop time - hh:mm",
       "value": "18:00"
     },
     {
-      "name": "newline",
+      "name": "newline7",
       "type": "ACElement",
       "value": "<br>"
     },
@@ -122,35 +123,22 @@ AutoConnectAux    ACAuxSettings;
 
 const char* settingsDataFile = "/settings_data.json";
 
-void rootPage() {
-  String  content =
-    "<html>"
-    "<head>"
-    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-    "<script type=\"text/javascript\">"
-    "setTimeout(\"location.reload()\", 1000);"
-    "</script>"
-    "</head>"
-    "<body>"
-    "<h2 align=\"center\" style=\"color:blue;margin:20px;\">Hello, world</h2>"
-    "<h3 align=\"center\" style=\"color:gray;margin:10px;\">{{DateTime}}</h3>"
-    "<p style=\"text-align:center;\">Reload the page to update the time.</p>"
-    "<p></p><p style=\"padding-top:15px;text-align:center\">" AUTOCONNECT_LINK(COG_24) "</p>"
-    "</body>"
-    "</html>";
-  static const char *wd[7] = { "Sun","Mon","Tue","Wed","Thr","Fri","Sat" };
+
+String GetDateTime(){
+
+static const char *wd[7] = { "Sun","Mon","Tue","Wed","Thr","Fri","Sat" };
   struct tm *tm;
   time_t  t;
   char    dateTime[40];
 
   t = time(NULL);
   tm = localtime(&t);
-  sprintf(dateTime, "%04d/%02d/%02d(%s) %02d:%02d:%02d.",
-    tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+  sprintf(dateTime, "%02d/%02d/%04d (%s) %02d:%02d:%02d.",
+    tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1900,
     wd[tm->tm_wday],
     tm->tm_hour, tm->tm_min, tm->tm_sec);
-  content.replace("{{DateTime}}", String(dateTime));
-  Server.send(200, "text/html", content);
+  
+  return dateTime; 
 }
 
 void SaveSettingsToFile(){
@@ -191,6 +179,32 @@ int getSelectedfromName(String timezone, int numoptions){
     return -1;
 }
 
+/*
+  This function is called to prepare the settings page before showing it
+*/
+String onSettings(AutoConnectAux& aux, PageArgument& args) {
+   SPIFFS.begin();
+   File settings_data_file = SPIFFS.open(settingsDataFile, "r");
+   if(true){
+   //if(!settings_data_file){
+    Serial.printf("the file '%s doesn't exist -> create it\r\n", settingsDataFile);
+    SaveSettingsToFile();
+    settings_data_file = SPIFFS.open(settingsDataFile, "r");
+  }    
+  ACAuxSettings.loadElement(settings_data_file);
+  settings_data_file.close(); 
+  Serial.printf("Loaded settings file: %s\r\n", settingsDataFile);
+  // Update the now_time element with current Date and Time
+  ACAuxSettings["now_time"].as<AutoConnectText>().value = "Current local time: " + GetDateTime() + "<br>";
+  ACAuxSettings["pdr_values"].as<AutoConnectText>().value = "Actual PDR Values 0-4095  PDR1: " + String(st.getPDR(1)) + " PDR2: " +  String(st.getPDR(2)) + "<br>";
+  SPIFFS.end();
+
+  return String();
+}
+
+/*
+  This function is called when the OK button is pressed on settings page
+*/
 void settingsSubmitPage() {
   // Get the "timezone" value from the page 
   // Values are accessed by the element name
@@ -252,28 +266,17 @@ void settingsSubmitPage() {
 }
 
 
-String onHello(AutoConnectAux& aux, PageArgument& args) {
-   SPIFFS.begin();
-   File settings_data_file = SPIFFS.open(settingsDataFile, "r");
-   if(!settings_data_file){
-    Serial.printf("the file '%s doesn't exist -> create it\r\n", settingsDataFile);
-    SaveSettingsToFile();
-    settings_data_file = SPIFFS.open(settingsDataFile, "r");
-  }    
-  ACAuxSettings.loadElement(settings_data_file);
+void configTime(){
 
-  settings_data_file.close(); 
-  Serial.printf("Loaded settings file: %s\r\n", settingsDataFile);
-  SPIFFS.end();
-
-  Serial.println("after onHello: print settings file");
-  print_settings_file();
-
-
-  return String();
-
-}
+  // config the NTP server
+  int selected_option_ndx =  ACAuxSettings["timezone"].as<AutoConnectSelect>().selected - 1; 
+  String timezone = TZ[selected_option_ndx].zone;
+  configTime(TZ[selected_option_ndx].tzoff * 3600, 0, TZ[selected_option_ndx].ntpServer);
+  Serial.println("Time zone: " + timezone);
+  Serial.println("ntp server: " + String(TZ[selected_option_ndx].ntpServer));
  
+}
+
 void setup() {
   delay(1000);
   Serial.begin(115200);
@@ -284,18 +287,23 @@ void setup() {
   Serial.println("setup: print_settings_file");
   print_settings_file();
 
-  // Enable saved past credential by autoReconnect option,
-  // even once it is disconnected.
-  AcConfig.autoReconnect = false;
-  AcConfig.portalTimeout = 1L;
-  AcConfig.retainPortal = true;
-  
-  AcPortal.config(AcConfig);
 
   // Load aux Settings page and the handler to dynamically load its parameters
   ACAuxSettings.load(settings_page);
-  ACAuxSettings.on(onHello);
- 
+  ACAuxSettings.on(onSettings);
+
+  // Enable saved past credential by autoReconnect option, even after disconnection.
+  AcConfig.autoReconnect = false;
+  AcConfig.portalTimeout = 1L;
+  AcConfig.retainPortal = true;
+  AcPortal.config(AcConfig);
+  AcPortal.join({ ACAuxSettings });        // Register aux. page
+
+  // Set the web page handlers
+  //Server.on("/", rootPage); 
+  Server.on("/settings_submit", settingsSubmitPage);   // Page handler to set the updated parameters 
+
+
   // Retrieve the select element that holds the time zone code and
   // register the zone mnemonics in advance.
   AutoConnectSelect&  tz = ACAuxSettings["timezone"].as<AutoConnectSelect>();
@@ -324,11 +332,6 @@ void setup() {
   Serial.println("Time zone: " + timezone);
   Serial.println("ntp server: " + String(TZ[selected_option_ndx].ntpServer));
  
-  AcPortal.join({ ACAuxSettings });        // Register aux. page
-
-  // Set the web page handlers
-  Server.on("/", rootPage); 
-  Server.on("/settings_submit", settingsSubmitPage);   // Page handler to set the updated parameters 
 
   //  set LED on GPIO pin 2
   LED_set_GPIO_pin(2);
@@ -355,6 +358,14 @@ void loop() {
       status = "connected";
       Serial.printf("status=%s\r\n", status.c_str());
       Serial.println("WiFi connected: " + WiFi.localIP().toString());
+
+      // config the NTP server every type a connection (hopefully with availabel Internet) in estabilished
+      int selected_option_ndx =  ACAuxSettings["timezone"].as<AutoConnectSelect>().selected - 1; 
+      String timezone = TZ[selected_option_ndx].zone;
+      configTime(TZ[selected_option_ndx].tzoff * 3600, 0, TZ[selected_option_ndx].ntpServer);
+      Serial.println("Time zone: " + timezone);
+      Serial.println("ntp server: " + String(TZ[selected_option_ndx].ntpServer));
+    
     }   
   }else{ // end WiFi.isConnected()
     // WiFi is not connected -> set the LED to blink rapidly
@@ -373,7 +384,7 @@ void loop() {
   String start_time_string = ACAuxSettings["start_time"].as<AutoConnectInput>().value;
   String stop_time_string = ACAuxSettings["stop_time"].as<AutoConnectInput>().value;
   
-  // calculate if tracking at this time
+  // calculate if we must track at this time
   int start_time_minutes = 60 * start_time_string.substring(0,start_time_string.indexOf(":")).toInt();
   start_time_minutes += start_time_string.substring(start_time_string.indexOf(":")+1).toInt();
   int stop_time_minutes = 60 * stop_time_string.substring(0,stop_time_string.indexOf(":")).toInt();
@@ -384,12 +395,13 @@ void loop() {
   
   Serial.printf("time_minutes start=%d now=%d stop=%d run_period=%d max_error=%d sensitivity=%d                             \r",start_time_minutes, now_minutes, stop_time_minutes, run_period, max_error, sensitivity);
   
-  if( start_time_minutes != stop_time_minutes && ( now_minutes >= start_time_minutes && now_minutes < stop_time_minutes ) ){
-    // tracking_loop
-
+  if( (start_time_minutes == stop_time_minutes) || ( now_minutes >= start_time_minutes && now_minutes < stop_time_minutes ) ){
+    // if it is the right time to track ...
+    // set the actual settings 
     st.setMaxError(max_error);  
     st.setRunPeriod(run_period);
     st.setSensitivity(sensitivity);
+    // run the SunTracker
     st.loop();
   } 
   
