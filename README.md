@@ -19,6 +19,8 @@ In the loop():
   * LED_loop
   * SunTracker.loop (only if now time is inside start_time and stop_time)
   * AutoConnect loop
+* config the local time (by NTP) using the TimeZone (at any time Internet is newly available)
+* enable / disable the sun tracking according to start_time and stop_time. It works only if the local time was set by NTP at least once after reboot.   
 
 ### AutoConnect
 
@@ -42,7 +44,7 @@ are connected
 * Check if the average of PDR1 and PDR2 values is above the minimum required (sensitivity)
 * Compare their values with max_error
 * Activate the two relays to rotate the DC motor to a new position in which abs(pdr2-pdr1) < avg(PDR1,PDR2) * max_error/100
-* Stop both relays if one of the runend is reached (closed)
+* Stop both relays if one of the End-Of-Run is reached (closed)
 
 
 
